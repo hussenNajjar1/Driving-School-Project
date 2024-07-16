@@ -1,0 +1,1226 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MedallionOData</name>
+    </assembly>
+    <members>
+        <member name="T:Medallion.OData.Client.ClientSideProjectionBuilder">
+            <summary>
+            MA: aids in constructing a minimal client-side projection expression to be applied on the results
+            that come back from the remote service
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ClientSideProjectionBuilder.CreateProjection(System.Collections.Generic.IReadOnlyList{System.Linq.Expressions.LambdaExpression})">
+            <summary>
+            Composes the given projection lambdas into a single projection which only references the
+            necessary selected colums. Thus, if you have something like
+            <code>
+                query.Select(c => new { CompanyName = c.Company.Name, c.Name })
+                    .Where(t => t.CompanyName != null &gt;&gt; t.CompanyName.Length > 0)
+                    .Select(t => t.Name);
+            </code>
+            we might naively generate a projection like c => new { CompanyName = c.Company.Name, c.Name }.Name.
+            This will fail when executed, because we will not have selected any columns from Company.
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.IODataClientQueryPipeline">
+            <summary>
+            A pipeline for executing queries against a remote service
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.IODataClientQueryPipeline.Translate(System.Linq.Expressions.Expression,Medallion.OData.Client.ODataQueryOptions)">
+            <summary>
+            Step 1: translates a Linq expression to the information needed to make a request to the remote service
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.IODataClientQueryPipeline.ReadAsync(System.Uri)">
+            <summary>
+            Step 2: makes the request to the remote service
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.IODataClientQueryPipeline.DeserializeAsync(Medallion.OData.Client.IODataTranslationResult,System.IO.Stream)">
+            <summary>
+            Step 3: serialize results
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.IODataTranslationResult">
+            <summary>
+            Represents the result of translating a linq expression to OData
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.IODataTranslationResult.RootQuery">
+            <summary>
+            The root <see cref="T:System.Linq.IQueryable"/> of the original query expression
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.IODataTranslationResult.ODataQuery">
+            <summary>
+            The <see cref="T:Medallion.OData.Trees.ODataExpression"/> representing the OData component of the url
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.IODataTranslationResult.PostProcessor">
+            <summary>
+            A post-processor function to be applied to the result after serialization
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.IODataWebResponse">
+            <summary>
+            Provides a generic interface which could be used to wrap the various implementations of web responses in .NET
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.IODataWebResponse.GetResponseStreamAsync">
+            <summary>
+            Gets the content stream for the web response
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.IODataDeserializationResult">
+            <summary>
+            Represents the result of deserializing the response
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.IODataDeserializationResult.InlineCount">
+            <summary>
+            Contains the result of the inline count option, if available
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.IODataDeserializationResult.Values">
+            <summary>
+            Contains the deserialized values
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.DefaultODataClientQueryPipeline">
+            <summary>
+            Provides a default implementation of a client-side pipeline
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.DefaultODataClientQueryPipeline.#ctor">
+            <summary>
+            Constructs an instance of <see cref="T:Medallion.OData.Client.DefaultODataClientQueryPipeline"/>
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.LinqToODataTranslator.MemberAndParameterTranslator">
+            <summary>
+            Helper class for dealing with translating members across projections. This is difficult because OData has no notion of projection except
+            for a final column selection
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Client.LinqToODataTranslator.MemberAndParameterTranslator._projectionList">
+            <summary>
+            Tracks all projections which have been applied via SELECTs. This is needed to allow for a client-side projection delegate to be generated
+            (OData doesn't support projection except for column selection and inclusion)
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Client.LinqToODataTranslator.MemberAndParameterTranslator._pathStack">
+            <summary>
+            This keeps track of the current set of mappings between member paths (e. g. a.b.c) and translations. 
+            The reason we need this is that we can't actually translate every projection directly. For example, if we have 
+            <code>q.Select(a => new { x = new { a.Foo } ... }).Select(t => t.x)</code>, we can't translate t.x directly into OData.
+            We can, however, remember all translations that could derive from t.x (in this case x.Foo), so that any time a property
+            of x is referenced we can provide the correct translation.
+            
+            Note that this could just be a variable to hold the most current value, but keeping the entire stack aids in debugging
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.LinqToODataTranslator.MemberAndParameterTranslator.RegisterProjection(System.Linq.Expressions.LambdaExpression)">
+            <summary>
+            Registers a lambda projection so that it can be used to inform further translations
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.LinqToODataTranslator.MemberAndParameterTranslator.GetFinalProjection">
+            <summary>
+            Returns a <see cref="T:System.Linq.Expressions.LambdaExpression"/> representing the final client-side projection to be applied to the returned result
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.LinqToODataTranslator.MemberAndParameterTranslator.GetReferencedMemberPathsInFinalProjection">
+            <summary>
+            Determines which properties of the root parameter were actually referenced in the final projection so that
+            we can create a $select filter
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.LinqToODataTranslator.MemberAndParameterTranslator.TryTranslateMemberAccessAsSpecialMember(System.Linq.Expressions.MemberExpression,Medallion.OData.Trees.ODataExpression@)">
+            <summary>
+            Attempts to translate the given <see cref="T:System.Linq.Expressions.MemberExpression"/> as a special OData member, like <see cref="P:System.Nullable`1.Value"/> or
+            <see cref="P:System.String.Length"/>.
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.ODataCompileException">
+            <summary>
+            Represents an error in compiling an <see cref="T:System.Linq.IQueryable"/> to OData
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataCompileException.#ctor">
+            <summary>
+            Constructs an exception with a default message
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataCompileException.#ctor(System.String)">
+            <summary>
+            Constructs an exception from a message
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataCompileException.#ctor(System.String,System.Exception)">
+            <summary>
+            Constructs an exception from a message and inner exception
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.ODataEntity">
+            <summary>
+            A dynamic entity type to provide support for dynamic client queries
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataEntity.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Object}})">
+            <summary>
+            Constructs a entity from the given set of key value pairs
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataEntity.Get``1(System.String)">
+            <summary>
+            Gets the strongly-typed value of the named property. This method can be used in OData queries as long as <paramref name="propertyName"/>
+            is a constant or local variable capture
+            </summary>
+            <typeparam name="TProperty">the property type</typeparam>
+            <param name="propertyName">the property name</param>
+            <returns>the property value</returns>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataEntity.Normalize(System.Linq.Expressions.Expression)">
+            <summary>
+            Replaces calls to <see cref="M:Medallion.OData.Client.ODataEntity.Get``1(System.String)"/> with property accesses
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataEntity.Denormalize(System.Linq.Expressions.Expression)">
+            <summary>
+            Reverts changes to an expression made by <see cref="M:Medallion.OData.Client.ODataEntity.Normalize(System.Linq.Expressions.Expression)"/>
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.IODataResult`1">
+            <summary>
+            Represents the result of an OData query
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.IODataResult`1.Results">
+            <summary>
+            The results of the query
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.IODataResult`1.TotalCount">
+            <summary>
+            The total number of items in the query IGNORING pagination. This value will be populated only if the
+            <see cref="P:Medallion.OData.Client.ODataQueryOptions.InlineCount"/> option is specified
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.ODataQueryable">
+            <summary>
+            Provides query operators for OData queries
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryable.ExecuteQueryAsync``1(System.Linq.IQueryable{``0},Medallion.OData.Client.ODataQueryOptions)">
+            <summary>
+            Asynchronously executes the given OData query
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryable.ExecuteQuery``1(System.Linq.IQueryable{``0},Medallion.OData.Client.ODataQueryOptions)">
+            <summary>
+            Executes the given OData query
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryable.ExecuteAsync``2(System.Linq.IQueryable{``0},System.Linq.Expressions.Expression{System.Func{System.Linq.IQueryable{``0},``1}})">
+            <summary>
+            Provides aync OData query execution after applying the given execute expression. For example:
+            <code>
+            var count = await query.ExecuteAsync(q => q.Count());
+            </code>
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.ODataQueryContext">
+            <summary>
+            Provides an access point for creating OData queries
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryContext.#ctor(Medallion.OData.Client.IODataClientQueryPipeline)">
+            <summary>
+            Creates a query context with the given pipeline
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryContext.#ctor(System.Func{System.Uri,System.Threading.Tasks.Task{System.IO.Stream}})">
+            <summary>
+            Creates a query context which uses the provided <paramref name="performWebRequest"/> function
+            to perform the underlying web requests.
+            
+            This is useful for injecting custom authentication or error handling steps into the pipeline without
+            constructing an entire custom <see cref="T:Medallion.OData.Client.IODataClientQueryPipeline"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryContext.Query``1(System.Uri)">
+            <summary>
+            Creates a query against the given uri
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryContext.Query``1(System.String)">
+            <summary>
+            Creates a query against the given uri
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryContext.Query(System.Uri)">
+            <summary>
+            Creates a "dynamic" query against the given uri
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryContext.Query(System.String)">
+            <summary>
+            Creates a "dynamic" query against the given url
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Client.ODataQueryOptions">
+            <summary>
+            Options for query execution
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Client.ODataQueryOptions.#ctor(System.String,System.Nullable{Medallion.OData.Trees.ODataInlineCountOption})">
+            <summary>
+            Constructs a new instance of <see cref="T:Medallion.OData.Client.ODataQueryOptions"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.ODataQueryOptions.InlineCount">
+            <summary>
+            Optionally specifies an inline count option for the query
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Client.ODataQueryOptions.Format">
+            <summary>
+            Determines the query format
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Dynamic.ODataObject">
+            <summary>
+            Represents an object value in OData
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Dynamic.ODataValue">
+            <summary>
+            Represents a primitive value in OData
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Dynamic.ODataValue.Value">
+            <summary>
+            The underlying C# value for this <see cref="T:Medallion.OData.Dynamic.ODataValue"/>. Cannot be null
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Dynamic.ODataValue.FromObject(System.Object)">
+            <summary>
+            Returns a <see cref="T:Medallion.OData.Dynamic.ODataValue"/> for the given <paramref name="value"/> if possible
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.EqualityComparers.Create``1(System.Func{``0,``0,System.Boolean},System.Func{``0,System.Int32},``0)">
+            <summary>
+            Creates a <see cref="T:System.Collections.Generic.EqualityComparer`1"/> from the given equals and hash functions
+            </summary>
+            <typeparam name="T">the type to be compared</typeparam>
+            <param name="equals">a function which returns true if two instances of the given type are equal. This function need not handle nulls</param>
+            <param name="hash">an optional function which computes a hash code for the given type. This function need not handle nulls</param>
+            <param name="schema">optionally specifies an example "schema" object to enable type-inference for anonymous types</param>
+        </member>
+        <member name="M:Medallion.OData.EqualityComparers.Create``2(System.Func{``0,``1},System.Collections.Generic.IEqualityComparer{``1},``0)">
+            <summary>
+            Creates an <see cref="T:System.Collections.Generic.EqualityComparer`1"/> from which compares objects of type T via the keys returned by the given key selector
+            </summary>
+            <typeparam name="T">the type to be compared</typeparam>
+            <typeparam name="TKey">the key type to use for comparison</typeparam>
+            <param name="keySelector">returns a key for a given T instance by which instances can be compared. This function need not handle nulls</param>
+            <param name="comparer">an optional comparer specifying how keys are compared</param>
+            <param name="schema">optionally specifies an example "schema" object to enable type-inference for anonymous types</param>
+        </member>
+        <member name="F:Medallion.OData.Parser.ODataTokenKind.Error">
+            <summary>
+            Represents an unexpected character
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Parser.ODataTokenKind.Eof">
+            <summary>
+            Represents the end of the token stream
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Parser.ODataParseException">
+            <summary>
+            Represents an error during the parsing of an OData url
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Parser.ODataParseException.#ctor">
+            <summary>
+            Default constructor
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Parser.ODataParseException.#ctor(System.String)">
+            <summary>
+            Message constructor
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Parser.ODataParseException.#ctor(System.String,System.Exception)">
+            <summary>
+            Message and inner exception constructor
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.QueryStringParser">
+            <summary>
+            This class acts as a shim for <see cref="M:System.Web.HttpUtility.ParseQueryString(System.String)"/> for .NET standard.
+            Due to an abundance of caution, we will use the native implementation in .NET framework. This class is not behind
+            a preprocessor directive to allow for tests that do a direct comparison between the two
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.IODataSerializer">
+            <summary>
+            An implementation of a serializer for OData services
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.IODataSerializer.Serialize``1(Medallion.OData.Service.IODataProjectResult{``0})">
+            <summary>
+            Serializes the given result
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.IODataServiceQueryPipeline">
+            <summary>
+            Provides a pipeline of steps to be performed by an OData service endpoint
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.IODataServiceQueryPipeline.Parse``1(System.Collections.Specialized.NameValueCollection)">
+            <summary>
+            Step 1
+            Parses the given url to an <see cref="T:Medallion.OData.Trees.ODataExpression"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.IODataServiceQueryPipeline.Filter``1(System.Linq.IQueryable{``0},Medallion.OData.Service.IODataParseResult)">
+            <summary>
+            Step 2
+            Applies filtering to the given query based on the parse results
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.IODataServiceQueryPipeline.Project``1(Medallion.OData.Service.IODataFilterResult{``0})">
+            <summary>
+            Step 3
+            Applies projection to the filtered results
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.IODataServiceQueryPipeline.Serialize``1(Medallion.OData.Service.IODataProjectResult{``0})">
+            <summary>
+            Step 4
+            Serializes the results of the query
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.IODataParseResult">
+            <summary>
+            The result of parsing an OData query
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.IODataParseResult.ODataQuery">
+            <summary>
+            The <see cref="T:Medallion.OData.Trees.ODataExpression"/> represented by the query string
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.IODataFilterResult`1">
+            <summary>
+            The result of filtering an OData query
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.IODataFilterResult`1.ResultQuery">
+            <summary>
+            The query containing the result entities
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.IODataFilterResult`1.InlineCountQuery">
+            <summary>
+            A query containing all entities to be included in an inline count call
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.IODataProjectResult`1">
+            <summary>
+            The result of applying projection to an OData query
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.IODataProjectResult`1.ProjectedResultQuery">
+            <summary>
+            A version of the result query that will only "pull in" selected properties
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.IODataProjectResult`1.ProjectMapping">
+            <summary>
+            Maps selected properties to their paths in the <see cref="P:Medallion.OData.Service.IODataProjectResult`1.ProjectedResultQuery"/>
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.DefaultODataServiceQueryPipeline">
+            <summary>
+            A default implementation for <see cref="T:Medallion.OData.Service.IODataServiceQueryPipeline"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.DefaultODataServiceQueryPipeline.#ctor(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,Medallion.OData.Service.IODataSerializer}})">
+            <summary>
+            Constructs a pipeline using the given mapping from format => serializer
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.ODataJsonSerializer">
+            <summary>
+            Serializes to OData's JSON lite format
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.ODataQueryProjector">
+            <summary>
+            The purpose of this class is to allow the specific selected columns to be retrieved from the query
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.ODataQueryProjector.BuildMapping(System.Collections.Generic.IEnumerable{Medallion.OData.Trees.ODataSelectColumnExpression})">
+            <summary>
+            Maps the paths in the projected type to the various select columns
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.ODataService">
+            <summary>
+            Wraps execution of an <see cref="T:Medallion.OData.Service.IODataServiceQueryPipeline"/> in a reusable service object. This class is thread-safe so long
+            as the given pipeline is also thread-safe
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.ODataService.#ctor(Medallion.OData.Service.IODataServiceQueryPipeline)">
+            <summary>
+            Constructs a service from the given pipeline
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.ODataService.Execute``1(System.Linq.IQueryable{``0},System.Collections.Specialized.NameValueCollection)">
+            <summary>
+            Executes the given query with the given url query options. A <see cref="T:System.Collections.Specialized.NameValueCollection"/>
+            can be retrieved from a <see cref="T:System.Uri"/> using <see cref="M:System.Web.HttpUtility.ParseQueryString(System.String)"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.ODataService.Execute``1(System.Linq.IQueryable{``0},System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Executes the given query with the given url query options. Url query values can be retrieved in WebApi
+            via the GetQueryNameValuePairs extension method on HttpRequestMessage
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.ODataService.Result">
+            <summary>
+            The result of executing a query locally in an OData service
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.ODataService.Result.Results">
+            <summary>
+            The result data
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.ODataService.Result.Format">
+            <summary>
+            The result format
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.PaginationHelper.Paginate``1(Medallion.OData.Service.IODataProjectResult{``0},System.Collections.IEnumerable@,System.Nullable{System.Int32}@)">
+            <summary>
+            Optimizes pagination and counting by avoiding projection reads when <see cref="P:Medallion.OData.Trees.ODataQueryExpression.Top"/> is 0 and
+            avoiding counts when on the last page of items (where count can be inferred)
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.BoolModeHelper.GetDefaultMode(Medallion.OData.Trees.ODataExpression)">
+            <summary>
+            Gets the default SQL boolean type of the given expression
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.DefaultSqlExecutor">
+            <summary>
+            Provides a default implementation of <see cref="T:Medallion.OData.Service.Sql.SqlExecutor"/> using a <see cref="T:System.Data.Common.DbConnection"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.DefaultSqlExecutor.#ctor(System.Func{System.Data.Common.DbConnection},System.Action{Medallion.OData.Service.Sql.DefaultSqlExecutor.OptionsBuilder})">
+            <summary>
+            Creates a <see cref="T:Medallion.OData.Service.Sql.DefaultSqlExecutor"/> using connections from <paramref name="connectionFactory"/>.
+            The <paramref name="options"/> parameter allows for additional configuration.
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.DefaultSqlExecutor.#ctor(System.Func{System.Data.Common.DbConnection},System.Boolean)">
+            <summary>
+            Creates a <see cref="T:Medallion.OData.Service.Sql.DefaultSqlExecutor"/> using connections from <paramref name="connectionFactory"/>. The created
+            connections will be disposed if and only if <paramref name="executorOwnsConnection"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.DefaultSqlExecutor.MaterializeReader(System.Data.Common.DbDataReader,System.Type)">
+            <summary>
+            Materializes the given <param name="reader"/> to an <see cref="T:System.Collections.IEnumerable"/> of the given <param name="resultType"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.DefaultSqlExecutor.Execute(System.String,System.Collections.Generic.IReadOnlyList{Medallion.OData.Service.Sql.Parameter},System.Type)">
+            <summary>
+            Implements <see cref="M:Medallion.OData.Service.Sql.SqlExecutor.Execute(System.String,System.Collections.Generic.IReadOnlyList{Medallion.OData.Service.Sql.Parameter},System.Type)"/> using <see cref="M:Medallion.OData.Service.Sql.DefaultSqlExecutor.MaterializeReader(System.Data.Common.DbDataReader,System.Type)"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.DefaultSqlExecutor.PopulateParameter(System.Data.Common.DbParameter,Medallion.OData.Service.Sql.Parameter)">
+            <summary>
+            Populates the <see cref="T:System.Data.Common.DbParameter"/> from the given <see cref="T:Medallion.OData.Service.Sql.Parameter"/>
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.DefaultSqlExecutor.OptionsBuilder">
+            <summary>
+            Fluent options configuration for the <see cref="T:Medallion.OData.Service.Sql.DefaultSqlExecutor"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.DefaultSqlExecutor.OptionsBuilder.ExecutorOwnsConnection(System.Boolean)">
+            <summary>
+            Sepecifies whether connections created by the executor's connection factory should
+            be disposed by the executor. Defaults to true.
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.DefaultSqlExecutor.OptionsBuilder.CommandTimeout(System.Int32)">
+            <summary>
+            Specifies a value to use for <see cref="P:System.Data.Common.DbCommand.CommandTimeout"/>. Defaults
+            to the default value for <see cref="T:System.Data.Common.DbCommand"/>s created by <see cref="M:System.Data.Common.DbConnection.CreateCommand"/>
+            for <see cref="T:System.Data.Common.DbConnection"/>s produced by the executor's factory
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.ODataSqlContext">
+            <summary>
+            Provides an entry point for creating OData compatible <see cref="T:System.Linq.IQueryable"/>s on top of SQL
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.ODataSqlContext.#ctor(Medallion.OData.Service.Sql.SqlSyntax,Medallion.OData.Service.Sql.SqlExecutor)">
+            <summary>
+            Creates a context that uses the given <see cref="T:Medallion.OData.Service.Sql.SqlSyntax"/> and <see cref="T:Medallion.OData.Service.Sql.SqlExecutor"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.ODataSqlContext.Query``1(System.String)">
+            <summary>
+            Creates a query which reads from <paramref name="tableSql"/>. When executed, the query will
+            run something like "SELECT * FROM [tableSql] t"
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.ODataSqlQuery">
+            <summary>
+            An <see cref="T:System.Linq.IQueryable"/> implementation that executes LINQ queries on a SQL database by first converting them to OData
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.ODataSqlQuery`1">
+            <summary>
+            An <see cref="T:System.Linq.IQueryable"/> implementation that executes LINQ queries on a SQL database by first converting them to OData
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.SqlExecutor">
+            <summary>
+            Provides functionality for executing SQL statements and materializing result objects
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlExecutor.Execute(System.String,System.Collections.Generic.IReadOnlyList{Medallion.OData.Service.Sql.Parameter},System.Type)">
+            <summary>
+            Executes the given <paramref name="sql"/> query using the given <paramref name="parameters"/>. Results should be materialized
+            to <paramref name="resultType"/>
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.Parameter">
+            <summary>
+            Represents a parameter in a SQL query. Similar to <see cref="T:System.Data.Common.DbParameter"/>, but not abstract
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.Parameter.Name">
+            <summary>
+            The parameter name
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.Parameter.Type">
+            <summary>
+            The CLR parameter type
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.Parameter.Value">
+            <summary>
+            The parameter value
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.SqlServerSyntax">
+            <summary>
+            Implements <see cref="T:Medallion.OData.Service.Sql.SqlSyntax"/> for MS SQLSERVER
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.SqlServerSyntax.Version">
+            <summary>
+            Represents SqlServer versions that altered syntax in a way that affects SQL generation
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Service.Sql.SqlServerSyntax.Version.Sql2008">
+            <summary>
+            Use for versions 2008 and below
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Service.Sql.SqlServerSyntax.Version.Sql2012">
+            <summary>
+            Use for versions 2012 and above
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.#ctor(Medallion.OData.Service.Sql.SqlServerSyntax.Version)">
+            <summary>
+            Constructs a provider for the given SqlServer <see cref="T:Medallion.OData.Service.Sql.SqlServerSyntax.Version"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.GetVersion(System.Data.SqlClient.SqlConnection)">
+            <summary>
+            Determines the <see cref="T:Medallion.OData.Service.Sql.SqlServerSyntax.Version"/> based on the given <paramref name="connection"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.GetVersion(System.Data.IDbConnection)">
+            <summary>
+            Determines the <see cref="T:Medallion.OData.Service.Sql.SqlServerSyntax.Version"/> based on the given <paramref name="connection"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.GetSqlTypeName(Medallion.OData.Trees.ODataExpressionType)">
+            <summary>
+            Maps <see cref="T:Medallion.OData.Trees.ODataExpressionType"/>s to SqlServer types
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.SqlServerSyntax.HasTwoSidedTrim">
+            <summary>
+            Returns false: SqlServer has LTRIM and RTRIM
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.RenderColumnName(System.Action{System.String},System.Reflection.PropertyInfo)">
+            <summary>
+            Uses [] escaping
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.RenderDatePartFunctionCall(Medallion.OData.Trees.ODataFunction,System.Action{System.String},System.Action)">
+            <summary>
+            Uses the DATEPART function
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.RenderIndexOfFunctionCall(System.Action{System.String},System.Action,System.Action)">
+            <summary>
+            Uses the CHARINDEX function
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.SqlServerSyntax.Pagination">
+            <summary>
+            Uses <see cref="F:Medallion.OData.Service.Sql.SqlSyntax.PaginationSyntax.OffsetFetch"/> for <see cref="F:Medallion.OData.Service.Sql.SqlServerSyntax.Version.Sql2012"/> and <see cref="F:Medallion.OData.Service.Sql.SqlSyntax.PaginationSyntax.RowNumber"/>
+            for <see cref="F:Medallion.OData.Service.Sql.SqlServerSyntax.Version.Sql2008"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.RenderModuloOperator(System.Action{System.String},System.Action,System.Action)">
+            <summary>
+            Uses the '%' operator
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.RenderParameterReference(System.Action{System.String},Medallion.OData.Service.Sql.Parameter)">
+            <summary>
+            Renders @<see cref="P:Medallion.OData.Service.Sql.Parameter.Name"/>
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.RenderRoundFunctionCall(System.Action{System.String},System.Action)">
+            <summary>
+            Uses the ROUND function
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlServerSyntax.RenderSubstringFunctionCall(System.Action{System.String},System.Action,System.Action,System.Action)">
+            <summary>
+            Uses the SUBSTRING function
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.SqlServerSyntax.StringLengthFunctionName">
+            <summary>
+            Uses the LEN function
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.SqlSyntax">
+            <summary>
+            Presents a simple interface for accessing a database. This is an abstract class rather than an interface
+            to allow us to add more virtual methods in the future without breaking backwards compatibility
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlSyntax.GetSqlTypeName(Medallion.OData.Trees.ODataExpressionType)">
+            <summary>
+            Gets the database name for the given <see cref="T:Medallion.OData.Trees.ODataExpressionType"/>. Throws <see cref="T:System.NotSupportedException"/>
+            if no database type maps to that type
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.SqlSyntax.UseAbbreviatedCeilingFunction">
+            <summary>
+            If specified CEIL is used instead of CEILING for <see cref="F:Medallion.OData.Trees.ODataFunction.Ceiling"/>. Defaults to FALSE (CEILING)
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlSyntax.RenderDatePartFunctionCall(Medallion.OData.Trees.ODataFunction,System.Action{System.String},System.Action)">
+            <summary>
+            Helper function to render a "datepart" function. Defaults to the ANSI EXTRACT([date part] FROM [expression]).
+            See http://users.atw.hu/sqlnut/sqlnut2-chp-4-sect-4.html for more information
+            </summary>
+            <param name="datePartFunction">An <see cref="T:Medallion.OData.Trees.ODataFunction"/> such as <see cref="F:Medallion.OData.Trees.ODataFunction.Day"/></param>
+            <param name="writer">A function that can be called to write SQL output</param>
+            <param name="renderArgument">A function that can be called to render the expression being operated on</param>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlSyntax.RenderIndexOfFunctionCall(System.Action{System.String},System.Action,System.Action)">
+            <summary>
+            Renders a call to the indexOf function. The result must used 0-based indices. The default returns (POSITION(needle IN haystack) - 1).
+            See http://users.atw.hu/sqlnut/sqlnut2-chp-4-sect-4.html
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.SqlSyntax.StringLengthFunctionName">
+            <summary>
+            Returns the function name for <see cref="F:Medallion.OData.Trees.ODataFunction.Length"/>. The default returns "CHAR_LENGTH"
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlSyntax.RenderRoundFunctionCall(System.Action{System.String},System.Action)">
+            <summary>
+            Renders a call to round(argument). The default behavior uses CASE WHEN argument > 0 THEN FLOOR(value + .5) ELSE CEILING(value - .5) END
+            </summary>
+            <param name="writer">writes arbitrary values</param>
+            <param name="renderArgument">writes the argument value</param>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlSyntax.RenderSubstringFunctionCall(System.Action{System.String},System.Action,System.Action,System.Action)">
+            <summary>
+            Renders a call to substring(a, start: b [, length: c]). The default uses SUBSTRING(a FROM b + 1 [FOR c])
+            </summary>
+            <param name="writer">writes arbitrary sql</param>
+            <param name="renderOriginalStringArgument">writes the first argument</param>
+            <param name="renderStartingPositionArgument">writes the second argument</param>
+            <param name="renderLengthArgument">if non-null, writes the third argument</param>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.SqlSyntax.HasTwoSidedTrim">
+            <summary>
+            Does the database provide TRIM? Otherwise, it is assumed to provide LTRIM and RTRIM (see http://users.atw.hu/sqlnut/sqlnut2-chp-4-sect-4.html).
+            The default returns true
+            </summary>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlSyntax.RenderModuloOperator(System.Action{System.String},System.Action,System.Action)">
+            <summary>
+            Renders a modulo operation. The default is to use the ANSII standard MOD function (see http://users.atw.hu/sqlnut/sqlnut2-chp-4-sect-4.html)
+            </summary>
+            <param name="writer">writes arbitrary text</param>
+            <param name="renderLeftOperand">writes the left operand (A in A % B)</param>
+            <param name="renderRightOperand">writes the right operand (B in A % B)</param>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlSyntax.RenderParameterReference(System.Action{System.String},Medallion.OData.Service.Sql.Parameter)">
+            <summary>
+            Renders a reference to the given <paramref name="parameter"/> in a SQL statement. By default,
+            renders @<see cref="P:Medallion.OData.Service.Sql.Parameter.Name"/>
+            </summary>
+            <param name="writer">writes arbitrary text</param>
+            <param name="parameter">the parameter to reference</param>
+        </member>
+        <member name="M:Medallion.OData.Service.Sql.SqlSyntax.RenderColumnName(System.Action{System.String},System.Reflection.PropertyInfo)">
+            <summary>
+            Renders the given <see cref="T:System.Reflection.PropertyInfo"/> as a column name. By default, names are escaped
+            using double quotes. See http://stackoverflow.com/questions/2901453/sql-standard-to-escape-column-names
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Service.Sql.SqlSyntax.PaginationSyntax">
+            <summary>
+            Specifies how pagination will be performed
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Service.Sql.SqlSyntax.PaginationSyntax.OffsetFetch">
+            <summary>
+            This is the ANSII standard. See http://dba.stackexchange.com/questions/30452/ansi-iso-plans-for-limit-standardization
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Service.Sql.SqlSyntax.PaginationSyntax.RowNumber">
+            <summary>
+            Supported by SqlServer
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Service.Sql.SqlSyntax.PaginationSyntax.Limit">
+            <summary>
+            Supported by MySql. See http://stackoverflow.com/questions/3799193/mysql-data-best-way-to-implement-paging
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.SqlSyntax.Pagination">
+            <summary>
+            Specifies how pagination should be performed. Defaults to <see cref="F:Medallion.OData.Service.Sql.SqlSyntax.PaginationSyntax.OffsetFetch"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Service.Sql.SqlSyntax.HasFirstClassBooleanType">
+            <summary>
+            If true, then the syntax is assumed to support a "first-class" boolean type similar to .NET's <see cref="T:System.Boolean"/>.
+            When the syntax does not support this, an expression like "BoolColumn eq (A and B)" must be translated by so that both haves
+            of the eq operator evaluate to 1 or 0. Conversely, an expression like "$filter=BoolColumn" must be translated like "$filter=BoolColumn eq 1".
+            
+            Defaults to false
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataExpressionKind">
+            <summary>
+            Represents the different types of OData expressions. Compare to <see cref="T:System.Linq.Expressions.ExpressionType"/> in 
+            LINQ expressions
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.Query">
+            <summary>
+            Represents an entire query
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.BinaryOp">
+            <summary>
+            Represents a binary operation like adition
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.UnaryOp">
+            <summary>
+            Represents a unary operation like "not"
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.Call">
+            <summary>
+            Represents a method call
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.Constant">
+            <summary>
+            Represents a literal value
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.MemberAccess">
+            <summary>
+            Represents a simple or navigation property access
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.Convert">
+            <summary>
+            Represents a cast
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.SortKey">
+            <summary>
+            Represents a value to sort by along with a sort direction
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionKind.SelectColumn">
+            <summary>
+            Represents a projected "column"
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataExpressionType">
+            <summary>
+            Represents the OData type system. See http://msdn.microsoft.com/en-us/library/ff478141.aspx
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Binary">
+            <summary>Edm.Binary</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Boolean">
+            <summary>Edm.Boolean</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Byte">
+            <summary>Edm.Byte</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.DateTime">
+            <summary>Edm.DateTime</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Decimal">
+            <summary>Edm.Decimal</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Double">
+            <summary>Edm.Double</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Single">
+            <summary>Edm.Single</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Guid">
+            <summary>Edm.Guid</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Int16">
+            <summary>Edm.Int16</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Int32">
+            <summary>Edm.Int32</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Int64">
+            <summary>Edm.Int64</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.SByte">
+            <summary>Edm.SByte</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.String">
+            <summary>Edm.String</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Time">
+            <summary>Edm.Time</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.DateTimeOffset">
+            <summary>Edm.DateTimeOffset</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Null">
+            <summary>
+            Not really a type, but used to model "null" constants
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Type">
+            <summary>
+            Type constants appear in cast and isof expressions
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Complex">
+            <summary>
+            Represents any non-primitive type, such as an entity type
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataExpressionType.Unknown">
+            <summary>
+            Represents an undetermined type
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataBinaryOp">
+            <summary>
+            The binary operations available in OData
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.Or">
+            <summary>or</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.And">
+            <summary>and</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.Equal">
+            <summary>eq</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.NotEqual">
+            <summary>ne</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.GreaterThan">
+            <summary>gt</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.GreaterThanOrEqual">
+            <summary>ge</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.LessThan">
+            <summary>lt</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.LessThanOrEqual">
+            <summary>le</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.Add">
+            <summary>add</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.Subtract">
+            <summary>sub</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.Multiply">
+            <summary>mul</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.Divide">
+            <summary>div</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataBinaryOp.Modulo">
+            <summary>mod</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataUnaryOp">
+            <summary>
+            Represents a unary operator
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataUnaryOp.Not">
+            <summary>not</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataInlineCountOption">
+            <summary>
+            Specifies an option for the inline count result in OData
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataInlineCountOption.None">
+            <summary>none</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataInlineCountOption.AllPages">
+            <summary>allpages</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataFunction">
+            <summary>
+            From http://www.odata.org/documentation/uri-conventions/#SystemQueryOptions
+            </summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.SubstringOf">
+            <summary>substringof</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.EndsWith">
+            <summary>endswith</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.StartsWith">
+            <summary>startswith</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Length">
+            <summary>length</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.IndexOf">
+            <summary>indexof</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Replace">
+            <summary>replace</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Substring">
+            <summary>substring</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.ToLower">
+            <summary>tolower</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.ToUpper">
+            <summary>toupper</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Trim">
+            <summary>trim</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Concat">
+            <summary>concat</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Day">
+            <summary>day</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Hour">
+            <summary>hour</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Minute">
+            <summary>minute</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Month">
+            <summary>month</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Second">
+            <summary>second</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Year">
+            <summary>year</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Round">
+            <summary>round</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Floor">
+            <summary>floor</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Ceiling">
+            <summary>ceiling</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.IsOf">
+            <summary>isof</summary>
+        </member>
+        <member name="F:Medallion.OData.Trees.ODataFunction.Cast">
+            <summary>cast</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataExpression">
+            <summary>
+            Represents a node in the OData "language". This class also contains static factories
+            for specific expression types, much like <see cref="T:System.Linq.Expressions.Expression"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataExpression.Kind">
+            <summary>the expression kind</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataExpression.Type">
+            <summary>the odata type of the expression</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataExpression.ClrType">
+            <summary>the .NET type of the expression</summary>
+        </member>
+        <member name="M:Medallion.OData.Trees.ODataExpression.ToString">
+            <summary>
+            Returns the OData expression language text for the expression
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataBinaryOpExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.BinaryOp"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataBinaryOpExpression.Right">
+            <summary>The right-hand expression</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataBinaryOpExpression.Operator">
+            <summary>The operator</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataBinaryOpExpression.Left">
+            <summary>The left-hand expression</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataUnaryOpExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.UnaryOp"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataUnaryOpExpression.Operand">
+            <summary>The operand</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataUnaryOpExpression.Operator">
+            <summary>The operator</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataCallExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.Call"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataCallExpression.Function">
+            <summary>the function call</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataCallExpression.Arguments">
+            <summary>the arguments</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataConstantExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.Constant"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataConstantExpression.Value">
+            <summary>the value of the constant</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataMemberAccessExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.MemberAccess"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataMemberAccessExpression.Expression">
+            <summary>the expression whose member is being accessed</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataMemberAccessExpression.Member">
+            <summary>the property being accessed</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataConvertExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.Convert"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataConvertExpression.Expression">
+            <summary>the expression being converted</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataSortKeyExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.SortKey"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataSortKeyExpression.Expression">
+            <summary>the value to sort by</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataSortKeyExpression.Descending">
+            <summary>specifies the direction of the sort</summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataSelectColumnExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.SelectColumn"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataSelectColumnExpression.Expression">
+            <summary>
+            The member being selected
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataSelectColumnExpression.AllColumns">
+            <summary>
+            Are all columns being selected?
+            </summary>
+        </member>
+        <member name="T:Medallion.OData.Trees.ODataQueryExpression">
+            <summary>
+            An expression for <see cref="F:Medallion.OData.Trees.ODataExpressionKind.Query"/>
+            </summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataQueryExpression.Filter">
+            <summary>the expression to filter by</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataQueryExpression.OrderBy">
+            <summary>the list of sort keys</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataQueryExpression.Top">
+            <summary>the number of items to take</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataQueryExpression.Skip">
+            <summary>the number to skip</summary>   
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataQueryExpression.Format">
+            <summary>the format to use</summary>    
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataQueryExpression.InlineCount">
+            <summary>the inline count option to use</summary>
+        </member>
+        <member name="P:Medallion.OData.Trees.ODataQueryExpression.Select">
+            <summary>the columns to select</summary>        
+        </member>
+    </members>
+</doc>

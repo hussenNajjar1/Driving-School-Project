@@ -1,0 +1,668 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D9B01781-4637-4970-A5C3-2D060E261CF6}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WindowsFormsApplication3</RootNamespace>
+    <AssemblyName>WindowsFormsApplication3</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.9.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
+      <HintPath>..\packages\BouncyCastle.1.8.9\lib\BouncyCastle.Crypto.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="CrystalDecisions.CrystalReports.Engine, Version=13.0.2000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL" />
+    <Reference Include="CrystalDecisions.ReportSource, Version=13.0.2000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304" />
+    <Reference Include="CrystalDecisions.Shared, Version=13.0.2000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304" />
+    <Reference Include="CrystalDecisions.Windows.Forms, Version=13.0.2000.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=MSIL" />
+    <Reference Include="FlashControlV71, Version=1.0.3187.32366, Culture=neutral, PublicKeyToken=692fbea5521e1304" />
+    <Reference Include="Guna.UI2, Version=2.0.4.5, Culture=neutral, PublicKeyToken=8b9d14aa5142e261, processorArchitecture=MSIL">
+      <HintPath>..\packages\Guna.UI2.WinForms.2.0.4.5\lib\net45\Guna.UI2.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="itextsharp, Version=5.5.13.3, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>..\packages\iTextSharp.5.5.13.3\lib\itextsharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="MetroFramework.Design, Version=1.4.0.0, Culture=neutral, PublicKeyToken=5f91a84759bf584a, processorArchitecture=MSIL">
+      <HintPath>..\packages\MetroModernUI.1.4.0.0\lib\net\MetroFramework.Design.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Plugin.Media, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Xam.Plugin.Media.6.0.2\lib\tizen40\Plugin.Media.dll</HintPath>
+      <Private>True</Private>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.DirectoryServices" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="pL\Backup.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\Backup.Designer.cs">
+      <DependentUpon>Backup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BL\Agent.cs" />
+    <Compile Include="BL\daily.cs" />
+    <Compile Include="BL\Dwra.cs" />
+    <Compile Include="BL\dwra_triner.cs" />
+    <Compile Include="BL\Exports.cs" />
+    <Compile Include="BL\import.cs" />
+    <Compile Include="BL\Login.cs" />
+    <Compile Include="BL\payman.cs" />
+    <Compile Include="BL\Rating.cs" />
+    <Compile Include="BL\Rejestery.cs" />
+    <Compile Include="BL\Tr.cs" />
+    <Compile Include="BL\Trainer.cs" />
+    <Compile Include="BL\Users.cs" />
+    <Compile Include="report_export.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="report_export.Designer.cs">
+      <DependentUpon>report_export.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_expo.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_expo.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_export_ol.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_export_ol.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_export_singl.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_export_singl.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_print_ex.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_print_ex.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\report_imports.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\report_imports.Designer.cs">
+      <DependentUpon>report_imports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\crestal_report_car.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\crestal_report_car.Designer.cs">
+      <DependentUpon>crestal_report_car.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\daily exercises.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\daily exercises.Designer.cs">
+      <DependentUpon>daily exercises.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\data_tr.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\data_tr.Designer.cs">
+      <DependentUpon>data_tr.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\paym.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\paym.Designer.cs">
+      <DependentUpon>paym.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\agent.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\agent.Designer.cs">
+      <DependentUpon>agent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="BL\C_cars.cs" />
+    <Compile Include="pL\car.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\car.Designer.cs">
+      <DependentUpon>car.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DAL\data access layar.cs" />
+    <Compile Include="pL\dawra.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\dawra.Designer.cs">
+      <DependentUpon>dawra.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\exports.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\exports.Designer.cs">
+      <DependentUpon>exports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.Designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\Form2.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\Form2.Designer.cs">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\imports.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\imports.Designer.cs">
+      <DependentUpon>imports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\main.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\main.Designer.cs">
+      <DependentUpon>main.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="pL\trainer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\trainer.Designer.cs">
+      <DependentUpon>trainer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="pL\regesrary.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\regesrary.Designer.cs">
+      <DependentUpon>regesrary.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\ratings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\ratings.Designer.cs">
+      <DependentUpon>ratings.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_imort_singl.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_imort_singl.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_import_ol.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_import_ol.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\REPORT.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\REPORT.Designer.cs">
+      <DependentUpon>REPORT.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\reports.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\reports.Designer.cs">
+      <DependentUpon>reports.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\report_assecc.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\report_assecc.Designer.cs">
+      <DependentUpon>report_assecc.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_ratings_singel.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_ratings_singel.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_rating_ol.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_rating_ol.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_Sport_ol.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_Sport_ol.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_tr_singl.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_tr_singl.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\report_car.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\report_car.Designer.cs">
+      <DependentUpon>report_car.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\report_TR.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\report_TR.Designer.cs">
+      <DependentUpon>report_TR.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\report_transportDirect.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\report_transportDirect.Designer.cs">
+      <DependentUpon>report_transportDirect.cs</DependentUpon>
+    </Compile>
+    <Compile Include="report_triner.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="report_triner.Designer.cs">
+      <DependentUpon>report_triner.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\CrystalReportSpo.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReportSpo.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReportTRINER_OL.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReportTRINER_OL.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReportTRINER_SINGL.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReportTRINER_SINGL.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_ol_car.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_ol_car.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalReport_TR_OL.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalReport_TR_OL.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\CrystalRepor_print_import_singel.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>CrystalRepor_print_import_singel.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\print.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\print.Designer.cs">
+      <DependentUpon>print.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\triner_dwra.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\triner_dwra.Designer.cs">
+      <DependentUpon>triner_dwra.cs</DependentUpon>
+    </Compile>
+    <Compile Include="RPT\report_car_singl.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>report_car_singl.rpt</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="RPT\report_triner.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RPT\report_triner.Designer.cs">
+      <DependentUpon>report_triner.cs</DependentUpon>
+    </Compile>
+    <Compile Include="pL\users.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="pL\users.Designer.cs">
+      <DependentUpon>users.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="pL\Backup.resx">
+      <DependentUpon>Backup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="report_export.resx">
+      <DependentUpon>report_export.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_expo.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_expo.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_export_ol.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_export_ol.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_export_singl.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_export_singl.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_print_ex.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_print_ex.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\report_imports.resx">
+      <DependentUpon>report_imports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\crestal_report_car.resx">
+      <DependentUpon>crestal_report_car.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\daily exercises.resx">
+      <DependentUpon>daily exercises.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\data_tr.resx">
+      <DependentUpon>data_tr.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\paym.resx">
+      <DependentUpon>paym.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\agent.resx">
+      <DependentUpon>agent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\car.resx">
+      <DependentUpon>car.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\dawra.resx">
+      <DependentUpon>dawra.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\exports.resx">
+      <DependentUpon>exports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\Form2.resx">
+      <DependentUpon>Form2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\imports.resx">
+      <DependentUpon>imports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\main.resx">
+      <DependentUpon>main.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\trainer.resx">
+      <DependentUpon>trainer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\regesrary.resx">
+      <DependentUpon>regesrary.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\ratings.resx">
+      <DependentUpon>ratings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_imort_singl.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_imort_singl.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_import_ol.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_import_ol.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\REPORT.resx">
+      <DependentUpon>REPORT.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\reports.resx">
+      <DependentUpon>reports.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\report_assecc.resx">
+      <DependentUpon>report_assecc.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_ratings_singel.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_ratings_singel.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_rating_ol.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_rating_ol.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_Sport_ol.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_Sport_ol.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_tr_singl.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_tr_singl.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\report_car.resx">
+      <DependentUpon>report_car.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\report_TR.resx">
+      <DependentUpon>report_TR.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\report_transportDirect.resx">
+      <DependentUpon>report_transportDirect.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="report_triner.resx">
+      <DependentUpon>report_triner.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReportSpo.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReportSpo.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReportTRINER_OL.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReportTRINER_OL.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReportTRINER_SINGL.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReportTRINER_SINGL.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_ol_car.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_ol_car.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalReport_TR_OL.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalReport_TR_OL.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\CrystalRepor_print_import_singel.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>CrystalRepor_print_import_singel.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\print.resx">
+      <DependentUpon>print.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\triner_dwra.resx">
+      <DependentUpon>triner_dwra.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\report_car_singl.rpt">
+      <Generator>CrystalDecisions.VSDesigner.CodeGen.ReportCodeGenerator</Generator>
+      <LastGenOutput>report_car_singl.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="RPT\report_triner.resx">
+      <DependentUpon>report_triner.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="pL\users.resx">
+      <DependentUpon>users.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{C0C07587-41A7-46C8-8FBD-3F9C8EBE2DDC}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="image\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\delo %282%29.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_Add_Male_User_Group_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_administrator_male_26px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_administrator_male_30px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_back_26px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_car_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_car_80px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_Delete_16px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_docket_64px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_edit_26px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_export_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_filter_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_last_24_hours_24px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_microsoft_excel_32px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_money_bag_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_print_24px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_receive_cash_64px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_save_64px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_Tools_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_update_left_rotation_30px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_user_groups_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_search_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_combo_chart_80px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_expensive_64px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_people_30px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_course_assign_16px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_home_page_50px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_print_webpage_64px.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_database_backup_50px_1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icons8_shutdown_26px.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
